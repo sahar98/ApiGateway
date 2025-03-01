@@ -1,0 +1,60 @@
+
+server:
+  port: 8087
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      #globalcors:
+      #  cors-configurations:
+       #   '[/**]':
+       #     allowedOrigins: ${gateway_allowedOrigins}
+       #     allowedHeaders: "*"
+       #     allowCredentials: true
+        #    allowed-methods: GET,POST,PUT,OPTIONS,DELETE
+
+
+
+      discovery:
+        locator:
+          - lower-case-service-id: true
+          - enabled: true
+
+      routes:
+        - id: user-management
+          uri: lb://user-management
+          predicates:
+            - Path=/user-management/**
+          filters:
+            - RewritePath=/user-management(?<segment>/?.*), $\{segment}
+
+
+
+
+
+#eureka:
+ # client:
+ #   serviceUrl:
+ #    defaultZone: http://localhost:8061/eureka
+
+logging:
+  level:
+    #    ${ROOT_LOG_LEVEL}
+
+    org.apache.http.headers: debug
+    org.apache.http.wire: error
+    org.springframework.web: trace
+    org.apache.http.impl.conn.PoolingHttpClientConnectionManage: error
+    org.springframework.web.HttpLogging: trace
+    org.springframework.cloud: debug
+
+hystrix.command.fallbackcmd.execution.isolation.thread.timeoutInMilliseconds: 2000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
