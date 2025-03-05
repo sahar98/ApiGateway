@@ -9,20 +9,7 @@ spring:
 
   cloud:
     gateway:
-      #globalcors:
-      #  cors-configurations:
-       #   '[/**]':
-       #     allowedOrigins: ${gateway_allowedOrigins}
-       #     allowedHeaders: "*"
-       #     allowCredentials: true
-        #    allowed-methods: GET,POST,PUT,OPTIONS,DELETE
 
-
-
-    #  discovery:
-    #    locator:
-    #      - lower-case-service-id: true
-    #      - enabled: true
 
       routes:
         - id: user-management
@@ -34,16 +21,9 @@ spring:
 
 
 
-
-
-#eureka:
- # client:
- #   serviceUrl:
- #    defaultZone: http://localhost:8061/eureka
-
 logging:
   level:
-    #    ${ROOT_LOG_LEVEL}
+
 
     org.apache.http.headers: debug
     org.apache.http.wire: error
