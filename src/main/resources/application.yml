@@ -1,6 +1,6 @@
-
 server:
-  port: 8087
+  port: 8080
+
 spring:
   main:
     allow-bean-definition-overriding: true
@@ -9,32 +9,47 @@ spring:
 
   cloud:
     gateway:
-
-
       routes:
+        # Route for the user-management API
         - id: user-management
-          uri: lb://user-management
+          uri: http://localhost:8081  # Direct URI to the User Management service
           predicates:
             - Path=/user-management/**
           filters:
-            - RewritePath=/user-management(?<segment>/?.*), $\{segment}
+            - RewritePath=/user-management/(?<segment>.*), /$\{segment}  # Removes the '/user-management' prefix before forwarding to the service
+            - name: CircuitBreaker
+              args:
+                name: userManagementCircuitBreaker
+                fallbackUri: forward:/fallback/user-management  # Fallback route in case of failure
 
+        # Swagger UI route
+        - id: user-management-swagger
+          uri: http://localhost:8081  # Forward to the User Management service
+          predicates:
+            - Path=/user-management/swagger-ui/**  # Match requests starting with /user-management/swagger-ui/
+          filters:
+              - RewritePath=/user-management/swagger-ui/(?<segment>.*), /swagger-ui/$\{segment}  # Rewrite the path to forward to Swagger UI
 
+        # Swagger API docs route
+        - id: api-docs
+          uri: http://localhost:8081  # Same User Management service URI
+          predicates:
+            - Path=/v3/api-docs/**  # Path to access Swagger API docs
+          filters:
+            - RewritePath=/v3/api-docs/(?<segment>.*), /v3/api-docs/$\{segment}
 
 logging:
   level:
-
-
     org.apache.http.headers: debug
     org.apache.http.wire: error
-    org.springframework.web: trace
+    org.springframework.web: TRACE
     org.apache.http.impl.conn.PoolingHttpClientConnectionManage: error
     org.springframework.web.HttpLogging: trace
     org.springframework.cloud: debug
+    org.springframework.cloud.gateway: DEBUG
 
-hystrix.command.fallbackcmd.execution.isolation.thread.timeoutInMilliseconds: 2000
 management:
   endpoints:
     web:
       exposure:
-        include: hystrix.stream
+        include:  health, info  # Expose useful management endpoints
